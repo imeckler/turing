@@ -64,26 +64,22 @@ randTM nq = M.fromList <$> mapM pairWithMove ((,) <$> [1..nq] <*> [O, X, A1, A2,
 type Board = Map (Int, Int) Alphabet
 type Tape  = Map Int Alphabet
 
-step2D :: TM -> Board -> (Int, Int) -> Integer -> Maybe (Board, (Int, Int), Integer)
-step2D m b pos q = do
-  (dir, q', a') <- M.lookup (q, a) m
-  return (M.insert pos a' b, move dir pos, q')
-  where a = M.findWithDefault O pos b
+step2D :: TM -> Board -> (Int, Int) -> Integer -> (Board, (Int, Int), Integer)
+step2D m b pos q = (M.insert pos a' b, move dir pos, q')
+  where (dir, q', a') = m ! (q, a)
+        a = M.findWithDefault O pos b
 
-step1D :: TM -> Tape -> Int -> Integer -> Maybe (Tape, Int, Integer)
-step1D m t pos q = do
-  (dir, q', a') <- M.lookup (q, a) m
-  let pos' = pos + case dir of { L -> -1; R -> 1; _ -> 0 }
-  pure (M.insert pos a' t, pos', q')
-  where a = M.findWithDefault O pos t
+step1D :: TM -> Tape -> Int -> Integer -> (Tape, Int, Integer)
+step1D m t pos q = (M.insert pos a' t, pos', q')
+  where (dir, q', a') = m ! (q, M.findWithDefault O pos t)
+        pos'          = pos + case dir of { L -> -1; R -> 1; _ -> 0 }
 
-runTM' :: (tm -> Map p a -> p -> Integer -> Maybe (Map p a, p, Integer)) -> p -> tm -> [(Map p a, p)]
+runTM' :: (tm -> Map p a -> p -> Integer -> (Map p a, p, Integer)) -> p -> tm -> [(Map p a, p)]
 runTM' step initPos m = go M.empty initPos 1
   where
     go b pos q =
       (b, pos) : case step m b pos q of { 
-        Nothing           -> repeat (b, pos);
-        Just (b', p', q') -> go b' p' q'
+        (b', p', q') -> go b' p' q'
       }
 
 runTM2D :: TM -> [(Map (Int, Int) Alphabet, (Int, Int))]
@@ -140,7 +136,6 @@ mkMain run step = \tm -> do
 tm1DStackMain = mkMain runTM1DStack stepFrame1DStack
 tm2DMain = mkMain runTM2D stepFrame2D
 
---                        undefined :: IORef [(Tape, Int)] -> Integer -> b
 tm1DMain = mkMain runTM1D stepFrame1D
 
 
@@ -170,6 +165,21 @@ main = do
 
 -- mvs n = [(d, q', a') | q <- [1..n], a <- [O, X], q' <- [1..n], a' <- [O, X], d <- [U, D, L, R]]
 
+{-
+step2D :: TM -> Board -> (Int, Int) -> Integer -> Maybe (Board, (Int, Int), Integer)
+step2D m b pos q = do
+  (dir, q', a') <- M.lookup (q, a) m
+  return (M.insert pos a' b, move dir pos, q')
+  where a = M.findWithDefault O pos b
+
+step1D :: TM -> Tape -> Int -> Integer -> Maybe (Tape, Int, Integer)
+step1D m t pos q = do
+  (dir, q', a') <- M.lookup (q, a) m
+  let pos' = pos + case dir of { L -> -1; R -> 1; _ -> 0 }
+  pure (M.insert pos a' t, pos', q')
+  where a = M.findWithDefault O pos t
+
+-}
 {-
   playIO
     (InWindow "turing" (1, 1) (200,200))
