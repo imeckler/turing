@@ -154,53 +154,5 @@ main = do
     white
     step
 
-  {-
-  let boards = runTM2D tm
-  boardRef <- newIORef boards
-  animateIO
-    (InWindow "turing" (1, 1) (200,200))
-    white
-    (stepFrame boardRef 0)
-  -}
 
--- mvs n = [(d, q', a') | q <- [1..n], a <- [O, X], q' <- [1..n], a' <- [O, X], d <- [U, D, L, R]]
-
-{-
-step2D :: TM -> Board -> (Int, Int) -> Integer -> Maybe (Board, (Int, Int), Integer)
-step2D m b pos q = do
-  (dir, q', a') <- M.lookup (q, a) m
-  return (M.insert pos a' b, move dir pos, q')
-  where a = M.findWithDefault O pos b
-
-step1D :: TM -> Tape -> Int -> Integer -> Maybe (Tape, Int, Integer)
-step1D m t pos q = do
-  (dir, q', a') <- M.lookup (q, a) m
-  let pos' = pos + case dir of { L -> -1; R -> 1; _ -> 0 }
-  pure (M.insert pos a' t, pos', q')
-  where a = M.findWithDefault O pos t
-
--}
-{-
-  playIO
-    (InWindow "turing" (1, 1) (200,200))
-    white
-    100
-    boards
-    (return . drawBoard . head)
-    (\_ b -> return b)
-    (\_ -> return .tail)
-  -}
-
-
--- Q,A,(Q,A,D)
-
-{-
-decodeTM = do
-  nq <- unpairS
-  n <- get
-  if n == 0
-    then return []
-    else (:) <$> decodeRule nq <*> decodeTM
--}
---  takeWhile (/= ((0,X),(L,0,X))) <$> replicateM (fromIntegral k) decodeRule
 

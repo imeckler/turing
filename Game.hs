@@ -1,20 +1,38 @@
-{-# LANGUAGE NoMonomorphismRestriction #-}
+{-# LANGUAGE NoMonomorphismRestriction, DeriveFunctor, LambdaCase #-}
 
 module Game where
 
 import qualified Data.Map as M
 import Data.Map (Map)
 import Control.Arrow
-
-data Strategy
-  = Put         Int Int Strategy
-  | InspectRed  Int ([Int] -> Strategy)
-  | InspectBlue Int ([Int] -> Strategy)
-
-type State = (Map Int [Int], Map Int [Int])
+import Control.Monad
+import Control.Monad.Free
 
 data Player = Red | Blue
 
+data GameF a
+  = Put         Int Int a
+  | LastMove (Maybe (Int, Int) -> a)
+  | Inspect Player Int ([Int] -> a)
+  deriving (Functor)
+
+type Game = Free GameF
+
+put :: Int -> Int -> Game ()
+put n m = liftF $ Put n m ()
+
+inspect :: Player -> Int -> Game [Int]
+inspect p n = liftF $ Inspect p n id
+
+lastMove :: Game (Maybe (Int, Int))
+lastMove = liftF $ LastMove id
+
+halting = forever $
+  lastMove >>= maybe (return ()) (\(n, m) -> if n == m then put n 0 else return ())
+
+type State = (Map Int [Int], Map Int [Int])
+
+{-
 move :: Player -> Strategy -> State -> (State, Strategy)
 move player (Put k n m) state = (focus insert state, m)
   where insert = M.alter (Just . maybe [] (k:)) n
@@ -31,5 +49,11 @@ runGame' s mr mb =
       (s'', mb') = move Blue mb s'
   in s : runGame' s'' mr' mb'
 
+{-
+haltingProblem = go 0 where
+  go :: Int -> Strategy
+  go n = insert
+-}
 runGame :: Strategy -> Strategy -> [State]
 runGame = runGame' (M.empty, M.empty)
+-}
