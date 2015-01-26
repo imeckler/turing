@@ -52,15 +52,11 @@ randomMove :: Integer -> State StdGen (Move, Integer, Alphabet)
 randomMove n = (,,) <$> randomRS (U, R) <*> randomRS (1, n) <*> randomS
 
 
--- randTM :: Integer -> ()
 randTM :: Integer -> State StdGen TM
 randTM nq = array bds <$> mapM pairWithMove ((,) <$> [1..nq] <*> [(O)..A4])
   where bds = ((1, O), (nq, A4))
         pairWithMove i = (i,) <$> randomMove nq
-{-
-randTM nq = M.fromList <$> mapM pairWithMove ((,) <$> [1..nq] <*> [O, X, A1, A2, A3, A4])
-  where pairWithMove i = (i,) <$> randomMove nq
--}
+
 type Board = Map (Int, Int) Alphabet
 type Tape  = Map Int Alphabet
 
@@ -141,8 +137,10 @@ tm1DMain = mkMain runTM1D stepFrame1D
 
 main :: IO ()
 main = do
-  (mode:x:_) <- getArgs
-  tm <- evalState (randTM (read x)) <$> newStdGen
+  (mode:x:args) <- getArgs
+  tm <- case args of
+    path:_ -> read <$> readFile path
+    []     -> evalState (randTM (read x)) <$> newStdGen
   writeFile "latest" (show tm)
   step <- case read mode :: Int of
     0 -> tm1DStackMain tm

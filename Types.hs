@@ -10,18 +10,14 @@ import Data.Ix
 import Data.Array
 
 data Alphabet = O | X | A1 | A2 | A3 | A4
-  deriving (Show, Eq, Ord, Bounded, Enum)
+  deriving (Show, Read, Eq, Ord, Bounded, Enum)
 
-{-
-data Color = Red | Green | Blue | Yellow | Purple | Black
-  deriving (Show, Eq, Ord, Bounded, Enum)
-  -}
 
 toColor :: Enum a => a -> Color
 toColor x = [white, red, green, blue, yellow, magenta, black] !! fromEnum x
 
 data Move = U | D | L | R
-  deriving (Show, Eq, Ord, Enum, Bounded)
+  deriving (Show, Read, Eq, Ord, Enum, Bounded)
 
 instance Ix Alphabet where
   range (x, y) = [x..y]
